@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-jsonscada",
   "type": "module",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "n8n community nodes to read/write JSON-SCADA (values, history, commands, alarm ack) and receive real-time notifications",
   "keywords": [
     "n8n-community-node-package",
@@ -16,7 +16,7 @@
   "license": "MIT",
   "homepage": "https://github.com/riclolsen/json-scada",
   "author": {
-    "name": "Ricardo L. Olsen"
+    "name": "Ricardo L. Olsen <olsen.ricardo@gmail.com>"
   },
   "repository": {
     "type": "git",

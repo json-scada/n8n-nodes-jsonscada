@@ -1,5 +1,6 @@
 import n8nNodesBase from 'eslint-plugin-n8n-nodes-base';
 import tsParser from '@typescript-eslint/parser';
+import jsonParser from 'eslint-plugin-json/dist/parser.mjs';
 
 export default [
 	{
@@ -7,11 +8,13 @@ export default [
 	},
 	{
 		files: ['package.json'],
+		languageOptions: {
+			parser: jsonParser,
+		},
 		plugins: {
 			'n8n-nodes-base': n8nNodesBase,
 		},
 		rules: {
-			...n8nNodesBase.configs.community.rules,
 			'n8n-nodes-base/community-package-json-name-still-default': 'off',
 		},
 	},
@@ -34,7 +37,6 @@ export default [
 			'n8n-nodes-base': n8nNodesBase,
 		},
 		rules: {
-			...n8nNodesBase.configs.nodes.rules,
 			'n8n-nodes-base/node-execute-block-missing-continue-on-fail': 'off',
 			'n8n-nodes-base/node-resource-description-filename-against-convention': 'off',
 		},

@@ -7,6 +7,19 @@ export default [
 	},
 	{
 		files: ['package.json'],
+		languageOptions: {
+			parser: {
+				parseForESLint: (code) => ({
+					ast: {
+						type: 'Program',
+						body: [],
+						sourceType: 'module',
+					},
+					scopeManager: null,
+					visitorKeys: {},
+				}),
+			},
+		},
 		rules: {
 			'n8n-nodes-base/community-package-json-name-still-default': 'off',
 		},

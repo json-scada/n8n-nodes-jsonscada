@@ -17,6 +17,11 @@
 #
 #   npm install --save-dev @n8n/node-cli@latest
 #
+# npm ≥ 11.5.1 is required for Option A (OIDC trusted publishing) below.
+# The Node 22 runner ships npm 10.x, so this workflow upgrades npm before
+# installing. Without that, npm never performs the OIDC token exchange and
+# the publish fails with "npm error code ENEEDAUTH".
+#
 # ─── ONE-TIME SETUP ────────────────────────────────────────────────────────────
 #
 # Option A — OIDC Trusted Publishing (recommended, no long-lived secrets):
@@ -82,6 +87,12 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+
+      # npm's OIDC trusted publishing (Option A) requires npm >= 11.5.1.
+      # Node 22 ships npm 10.x, which silently skips the OIDC exchange and
+      # then fails at publish time with "npm error code ENEEDAUTH".
+      - name: Upgrade npm
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci

@@ -13,10 +13,16 @@ export default [
 					ast: {
 						type: 'Program',
 						body: [],
+						tokens: [],
+						comments: [],
+						loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
+						range: [0, 0],
 						sourceType: 'module',
 					},
 					scopeManager: null,
-					visitorKeys: {},
+					visitorKeys: {
+						Program: [],
+					},
 				}),
 			},
 		},

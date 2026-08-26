@@ -1,5 +1,6 @@
 {
   "name": "n8n-nodes-jsonscada",
+  "type": "module",
   "version": "0.1.6",
   "description": "n8n community nodes to read/write JSON-SCADA (values, history, commands, alarm ack) and receive real-time notifications",
   "keywords": [

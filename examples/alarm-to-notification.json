@@ -1,0 +1,52 @@
+{
+  "name": "JSON-SCADA Alarm to Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "emitMode": "perPoint",
+        "types": ["soeEvent"],
+        "requireToken": true,
+        "bearerToken": "CHANGE_ME_SAME_AS_CONNECTION_PASSPHRASE"
+      },
+      "id": "trigger-1",
+      "name": "JSON-SCADA Trigger",
+      "type": "n8n-nodes-jsonscada.jsonScadaTrigger",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "webhookId": "jsonscada-alarms"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.priority }}",
+              "operation": "smallerEqual",
+              "value2": 3
+            }
+          ]
+        }
+      },
+      "id": "filter-1",
+      "name": "High Priority Only",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "message": "=SCADA event: {{ $json.tag }} — {{ $json.eventText }} (priority {{ $json.priority }})"
+      },
+      "id": "notify-1",
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 260],
+      "notes": "Replace with Telegram/Slack/Email node"
+    }
+  ],
+  "connections": {
+    "JSON-SCADA Trigger": { "main": [[{ "node": "High Priority Only", "type": "main", "index": 0 }]] },
+    "High Priority Only": { "main": [[{ "node": "Send Notification", "type": "main", "index": 0 }]] }
+  }
+}

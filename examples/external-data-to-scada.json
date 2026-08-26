@@ -1,0 +1,43 @@
+{
+  "name": "External Data to JSON-SCADA",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "minutes", "minutesInterval": 5 }] } },
+      "id": "sched-1",
+      "name": "Every 5 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [420, 300]
+    },
+    {
+      "parameters": { "url": "https://api.example.com/weather", "options": {} },
+      "id": "http-1",
+      "name": "Fetch External Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "resource": "data",
+        "operation": "sendValues",
+        "points": {
+          "point": [
+            { "tag": "N8N-WEATHER-TEMP", "value": "={{ $json.temperature }}", "invalid": false, "timeTagAtSource": "={{ $now.toISO() }}" },
+            { "tag": "N8N-WEATHER-HUM", "value": "={{ $json.humidity }}", "invalid": false, "timeTagAtSource": "" }
+          ]
+        }
+      },
+      "id": "send-1",
+      "name": "Send Values to SCADA",
+      "type": "n8n-nodes-jsonscada.jsonScada",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "credentials": { "jsonScadaListener": { "id": "1", "name": "JSON-SCADA N8N Listener" } }
+    }
+  ],
+  "connections": {
+    "Every 5 min": { "main": [[{ "node": "Fetch External Data", "type": "main", "index": 0 }]] },
+    "Fetch External Data": { "main": [[{ "node": "Send Values to SCADA", "type": "main", "index": 0 }]] }
+  }
+}

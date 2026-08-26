@@ -1,0 +1,57 @@
+{
+  "name": "JSON-SCADA Command with Readback",
+  "nodes": [
+    {
+      "parameters": { "emitMode": "perPoint", "types": ["valueChange"], "requireToken": false },
+      "id": "trigger-1",
+      "name": "JSON-SCADA Trigger",
+      "type": "n8n-nodes-jsonscada.jsonScadaTrigger",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "webhookId": "jsonscada-values"
+    },
+    {
+      "parameters": {
+        "conditions": { "string": [{ "value1": "={{ $json.tag }}", "operation": "equals", "value2": "KAW2-TRIGGER" }] }
+      },
+      "id": "if-1",
+      "name": "Trigger Tag?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "resource": "command",
+        "operation": "issueCommand",
+        "pointKey": 555,
+        "commandValue": "1",
+        "commandIsString": false
+      },
+      "id": "cmd-1",
+      "name": "Issue Command",
+      "type": "n8n-nodes-jsonscada.jsonScada",
+      "typeVersion": 1,
+      "position": [900, 260],
+      "credentials": { "jsonScadaApi": { "id": "1", "name": "JSON-SCADA API" } }
+    },
+    {
+      "parameters": {
+        "resource": "tag",
+        "operation": "readValues",
+        "tags": "KAW2-SUPERVISED"
+      },
+      "id": "read-1",
+      "name": "Read Back Supervised",
+      "type": "n8n-nodes-jsonscada.jsonScada",
+      "typeVersion": 1,
+      "position": [1140, 260],
+      "credentials": { "jsonScadaApi": { "id": "1", "name": "JSON-SCADA API" } }
+    }
+  ],
+  "connections": {
+    "JSON-SCADA Trigger": { "main": [[{ "node": "Trigger Tag?", "type": "main", "index": 0 }]] },
+    "Trigger Tag?": { "main": [[{ "node": "Issue Command", "type": "main", "index": 0 }]] },
+    "Issue Command": { "main": [[{ "node": "Read Back Supervised", "type": "main", "index": 0 }]] }
+  }
+}

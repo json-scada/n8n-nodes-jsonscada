@@ -1,6 +1,5 @@
 import n8nNodesBase from 'eslint-plugin-n8n-nodes-base';
 import tsParser from '@typescript-eslint/parser';
-import jsonParser from 'eslint-plugin-json/dist/parser.mjs';
 
 export default [
 	{
@@ -8,12 +7,6 @@ export default [
 	},
 	{
 		files: ['package.json'],
-		languageOptions: {
-			parser: jsonParser,
-		},
-		plugins: {
-			'n8n-nodes-base': n8nNodesBase,
-		},
 		rules: {
 			'n8n-nodes-base/community-package-json-name-still-default': 'off',
 		},

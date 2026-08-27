@@ -4,6 +4,9 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IDataObject,
+	Icon,
+	JsonObject,
+	NodeApiError,
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
@@ -22,12 +25,13 @@ export class JsonScada implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'JSON-SCADA',
 		name: 'jsonScada',
-		icon: 'file:jsonscada.svg',
+		icon: { light: 'file:jsonscada.svg', dark: 'file:jsonscada.dark.svg' } as Icon,
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Read/write JSON-SCADA: values, commands, alarm/event acknowledgement, browse and value push',
 		defaults: { name: 'JSON-SCADA' },
+		usableAsTool: true,
 		inputs: ['main'] as NodeConnectionType[],
 		outputs: ['main'] as NodeConnectionType[],
 		credentials: [
@@ -39,7 +43,7 @@ export class JsonScada implements INodeType {
 				},
 			},
 			{
-				name: 'jsonScadaListener',
+				name: 'jsonScadaListenerApi',
 				required: true,
 				displayOptions: {
 					show: { resource: ['data'] },
@@ -181,11 +185,11 @@ export class JsonScada implements INodeType {
 				name: 'ackAction',
 				type: 'options',
 				options: [
+					{ name: 'Acknowledge All Alarms', value: 'ackAllAlarms' },
+					{ name: 'Acknowledge All Events', value: 'ackAllEvents' },
 					{ name: 'Acknowledge Point Alarms', value: 'ackOneAlarm' },
 					{ name: 'Acknowledge Point Events', value: 'ackPointEvents' },
 					{ name: 'Remove Point Events', value: 'removePointEvents' },
-					{ name: 'Acknowledge All Alarms', value: 'ackAllAlarms' },
-					{ name: 'Acknowledge All Events', value: 'ackAllEvents' },
 					{ name: 'Silence Beep', value: 'silenceBeep' },
 				],
 				default: 'ackOneAlarm',
@@ -225,7 +229,7 @@ export class JsonScada implements INodeType {
 							{ displayName: 'Tag', name: 'tag', type: 'string', default: '' },
 							{ displayName: 'Value', name: 'value', type: 'string', default: '' },
 							{ displayName: 'Invalid', name: 'invalid', type: 'boolean', default: false },
-							{ displayName: 'Time (ISO, optional)', name: 'timeTagAtSource', type: 'string', default: '' },
+							{ displayName: 'Time (ISO, Optional)', name: 'timeTagAtSource', type: 'string', default: '' },
 						],
 					},
 				],
@@ -284,7 +288,12 @@ export class JsonScada implements INodeType {
 					returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: i } });
 					continue;
 				}
-				throw error;
+				// Surface everything through NodeApiError so the n8n UI keeps the HTTP
+				// context; the explicit message preserves our own validation wording.
+				throw new NodeApiError(this.getNode(), error as JsonObject, {
+					message: (error as Error).message,
+					itemIndex: i,
+				});
 			}
 		}
 

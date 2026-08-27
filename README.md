@@ -44,7 +44,7 @@ Used by the action node (Tag / Command / Alarm resources). Fields:
   refreshes it automatically on expiry.
 - **Ignore TLS Certificate Issues** — for self-signed dev servers only.
 
-### JSON-SCADA N8N Listener
+### JSON-SCADA N8N Listener API
 
 Used by the action node's **Send Values** operation. Fields:
 

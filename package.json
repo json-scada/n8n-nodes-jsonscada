@@ -1,7 +1,6 @@
 {
   "name": "n8n-nodes-jsonscada",
-  "type": "module",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "n8n community nodes to read/write JSON-SCADA (values, history, commands, alarm ack) and receive real-time notifications",
   "keywords": [
     "n8n-community-node-package",
@@ -16,7 +15,8 @@
   "license": "MIT",
   "homepage": "https://github.com/riclolsen/json-scada",
   "author": {
-    "name": "Ricardo L. Olsen <olsen.ricardo@gmail.com>"
+    "name": "Ricardo L. Olsen",
+    "email": "olsen.ricardo@gmail.com"
   },
   "repository": {
     "type": "git",
@@ -42,7 +42,7 @@
     "n8nNodesApiVersion": 1,
     "credentials": [
       "dist/credentials/JsonScadaApi.credentials.js",
-      "dist/credentials/JsonScadaListener.credentials.js"
+      "dist/credentials/JsonScadaListenerApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/JsonScada/JsonScada.node.js",
@@ -53,18 +53,16 @@
     "n8n-workflow": "*"
   },
   "devDependencies": {
+    "@n8n/eslint-plugin-community-nodes": "^0.30.0",
     "@n8n/node-cli": "^0.23.0",
     "@types/node": "^20.19.43",
     "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^10.9.1",
-    "eslint-plugin-n8n-nodes-base": "^1.16.1",
+    "eslint": "9.29.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.7",
     "gulp": "^5.0.0",
     "n8n-workflow": "*",
     "prettier": "^3.3.2",
+    "release-it": "^21.0.2",
     "typescript": "^5.5.3"
-  },
-  "dependencies": {
-    "eslint-plugin-json": "^5.0.0",
-    "release-it": "^21.0.2"
   }
 }

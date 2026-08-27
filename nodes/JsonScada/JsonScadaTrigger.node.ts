@@ -1,10 +1,12 @@
 import {
+	IHookFunctions,
 	INodeType,
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IWebhookResponseData,
 	INodeExecutionData,
 	IDataObject,
+	Icon,
 	NodeConnectionType,
 } from 'n8n-workflow';
 
@@ -18,13 +20,13 @@ export class JsonScadaTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'JSON-SCADA Trigger',
 		name: 'jsonScadaTrigger',
-		icon: 'file:jsonscada.svg',
+		icon: { light: 'file:jsonscada.svg', dark: 'file:jsonscada.dark.svg' } as Icon,
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{$parameter["emitMode"]}}',
 		description: 'Starts a workflow on JSON-SCADA value changes, SOE events, integrity snapshots or heartbeats',
 		defaults: { name: 'JSON-SCADA Trigger' },
-		inputs: [] as NodeConnectionType[],
+		inputs: [],
 		outputs: ['main'] as NodeConnectionType[],
 		webhooks: [
 			{
@@ -90,6 +92,24 @@ export class JsonScadaTrigger implements INodeType {
 				description: 'Must match the N8N connection passphrase',
 			},
 		],
+	};
+
+	// The JSON-SCADA N8N driver has no API for registering callback endpoints: the
+	// Production Webhook URL is pasted into the connection's "endpointURLs" in the
+	// AdminUI by hand. `checkExists` therefore reports the webhook as already
+	// present, which keeps n8n from attempting a remote create/delete it cannot do.
+	webhookMethods = {
+		default: {
+			async checkExists(this: IHookFunctions): Promise<boolean> {
+				return true;
+			},
+			async create(this: IHookFunctions): Promise<boolean> {
+				return true;
+			},
+			async delete(this: IHookFunctions): Promise<boolean> {
+				return true;
+			},
+		},
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {

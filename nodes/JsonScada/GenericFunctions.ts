@@ -3,10 +3,11 @@ import {
 	IHookFunctions,
 	ILoadOptionsFunctions,
 	IDataObject,
+	IN8nHttpFullResponse,
 	JsonObject,
 	NodeApiError,
 	IHttpRequestMethods,
-	IRequestOptions,
+	IHttpRequestOptions,
 } from 'n8n-workflow';
 
 import {
@@ -32,15 +33,14 @@ function cacheKey(baseUrl: string, username: string): string {
 
 // Perform the JSON-SCADA signin and capture the x-access-token cookie value.
 async function login(ctx: Ctx, baseUrl: string, username: string, password: string, ignoreTls: boolean): Promise<string> {
-	const options: IRequestOptions = {
+	const options: IHttpRequestOptions = {
 		method: 'POST' as IHttpRequestMethods,
-		uri: baseUrl.replace(/\/+$/, '') + '/Invoke/auth/signin',
+		url: baseUrl.replace(/\/+$/, '') + '/Invoke/auth/signin',
 		body: { username, password },
-		json: true,
-		resolveWithFullResponse: true,
-		rejectUnauthorized: !ignoreTls,
+		returnFullResponse: true,
+		skipSslCertificateValidation: ignoreTls,
 	};
-	const response = await ctx.helpers.request!(options);
+	const response = (await ctx.helpers.httpRequest(options)) as IN8nHttpFullResponse;
 	const body = response.body as IDataObject;
 	if (!body || body.ok !== true) {
 		throw new NodeApiError(ctx.getNode(), (body as unknown as JsonObject) ?? {}, {
@@ -87,16 +87,15 @@ export async function invoke(ctx: Ctx, request: IDataObject, timeoutMs = 5000): 
 	if (!token) token = await login(ctx, cfg.baseUrl, cfg.username, cfg.password, cfg.ignoreTls);
 
 	const doPost = async (tok: string): Promise<IDataObject> => {
-		const options: IRequestOptions = {
+		const options: IHttpRequestOptions = {
 			method: 'POST' as IHttpRequestMethods,
-			uri: cfg.baseUrl + '/Invoke',
+			url: cfg.baseUrl + '/Invoke',
 			headers: { 'x-access-token': tok },
 			body: request,
-			json: true,
 			timeout: timeoutMs + 2000,
-			rejectUnauthorized: !cfg.ignoreTls,
+			skipSslCertificateValidation: cfg.ignoreTls,
 		};
-		return (await ctx.helpers.request!(options)) as IDataObject;
+		return (await ctx.helpers.httpRequest(options)) as IDataObject;
 	};
 
 	let data = await doPost(token);
@@ -237,18 +236,17 @@ export async function writeAck(ctx: Ctx, pointKeyOrTag: string | number, action:
 
 // Send values into the N8N driver listener (the B1 "SCADA as data source" path).
 export async function sendValues(ctx: IExecuteFunctions, points: IDataObject[]): Promise<IDataObject> {
-	const cred = await ctx.getCredentials('jsonScadaListener');
+	const cred = await ctx.getCredentials('jsonScadaListenerApi');
 	const listenerUrl = (cred.listenerUrl as string).replace(/\/+$/, '');
 	const auth = Buffer.from((cred.username as string) + ':' + (cred.password as string)).toString('base64');
-	const options: IRequestOptions = {
+	const options: IHttpRequestOptions = {
 		method: 'POST' as IHttpRequestMethods,
-		uri: listenerUrl + '/n8n/updates',
+		url: listenerUrl + '/n8n/updates',
 		headers: { Authorization: 'Basic ' + auth },
 		body: { points },
-		json: true,
-		rejectUnauthorized: cred.ignoreTlsIssues !== true,
+		skipSslCertificateValidation: cred.ignoreTlsIssues === true,
 	};
-	return (await ctx.helpers.request!(options)) as IDataObject;
+	return (await ctx.helpers.httpRequest(options)) as IDataObject;
 }
 
 // ---- result shaping ----

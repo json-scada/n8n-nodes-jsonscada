@@ -1,5 +1,7 @@
 import {
+	ICredentialTestRequest,
 	ICredentialType,
+	Icon,
 	INodeProperties,
 } from 'n8n-workflow';
 
@@ -12,6 +14,8 @@ export class JsonScadaApi implements ICredentialType {
 	name = 'jsonScadaApi';
 
 	displayName = 'JSON-SCADA API';
+
+	icon: Icon = { light: 'file:jsonscada.svg', dark: 'file:jsonscada.dark.svg' };
 
 	documentationUrl = 'https://github.com/json-scada/n8n-nodes-jsonscada/README.md';
 
@@ -49,4 +53,30 @@ export class JsonScadaApi implements ICredentialType {
 			description: 'Whether to connect even when the server TLS certificate cannot be validated (self-signed). Do not enable in production.',
 		},
 	];
+
+	// "Test" in the credential dialog performs the same signin the node does at
+	// runtime. The server answers 200 with { ok: false, message } for bad
+	// credentials, so the failure has to be detected from the body, not the status.
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials.baseUrl.replace(/\/+$/, "")}}',
+			url: '/Invoke/auth/signin',
+			method: 'POST',
+			body: {
+				username: '={{$credentials.username}}',
+				password: '={{$credentials.password}}',
+			},
+			skipSslCertificateValidation: '={{$credentials.ignoreTlsIssues}}',
+		},
+		rules: [
+			{
+				type: 'responseSuccessBody',
+				properties: {
+					key: 'ok',
+					value: false,
+					message: 'JSON-SCADA rejected the login: check the base URL, username and password',
+				},
+			},
+		],
+	};
 }

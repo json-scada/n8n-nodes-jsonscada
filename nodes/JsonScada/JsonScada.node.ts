@@ -246,7 +246,7 @@ export class JsonScada implements INodeType {
 		for (let i = 0; i < items.length; i++) {
 			try {
 				if (resource === 'tag' && operation === 'readValues') {
-					const raw = this.getNodeParameter('tags', i) as string;
+					const raw = String(this.getNodeParameter('tags', i) ?? '');
 					const list = raw.split(',').map((s) => s.trim()).filter((s) => s !== '');
 					const points = await readValues(this, list);
 					for (const p of points) returnData.push({ json: p, pairedItem: { item: i } });
@@ -273,7 +273,11 @@ export class JsonScada implements INodeType {
 					const coll = this.getNodeParameter('points', i) as IDataObject;
 					const rows = (coll.point as IDataObject[]) || [];
 					const points: IDataObject[] = rows.map((r) => {
-						const out: IDataObject = { tag: r.tag, value: coerceValue(r.value as string), invalid: r.invalid === true };
+						const out: IDataObject = {
+							tag: r.tag,
+							value: coerceValue(r.value),
+							invalid: r.invalid === true || r.invalid === 'true',
+						};
 						if (r.timeTagAtSource && String(r.timeTagAtSource).trim() !== '')
 							out.timeTagAtSource = r.timeTagAtSource;
 						return out;
@@ -319,8 +323,15 @@ function ackActionCode(name: string): number {
 	}
 }
 
-// numbers stay numbers, "true"/"false" become booleans, everything else is a string
-function coerceValue(v: string): number | string | boolean {
+// The Value field is declared as a string parameter, but an expression bound to it
+// resolves to whatever the incoming item holds - a number, a boolean, null, even an
+// object - and n8n passes that through untouched. So normalize whatever arrives:
+// numbers and booleans go through as they are, "true"/"false" and numeric text are
+// parsed, and everything else ends up a string.
+function coerceValue(v: unknown): number | string | boolean {
+	if (typeof v === 'number' || typeof v === 'boolean') return v;
+	if (v === null || v === undefined) return '';
+	if (typeof v !== 'string') return JSON.stringify(v);
 	if (v === 'true') return true;
 	if (v === 'false') return false;
 	if (v.trim() !== '' && !isNaN(Number(v))) return Number(v);
